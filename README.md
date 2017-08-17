@@ -1,5 +1,5 @@
 # Returner 2
-##Prof Hussein Suleman <hussein@cs.uct.ac.za>
+## Prof Hussein Suleman <hussein@cs.uct.ac.za>
 The Returner is a software application used by the Department of Computer Science in order to return
 test scripts to students electronically. Tutors scan batches of scripts and the system uses image
 processing to recognise the student ID and marks and create PDF files for individual students.
