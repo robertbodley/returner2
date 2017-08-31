@@ -1,7 +1,20 @@
 package detection;
+import util.ScriptObject;
 
-/**
- * Created by Oliver on 2017/08/31.
- */
 public class Detection {
+
+    public static boolean detectStudentNumber(ScriptObject script){
+        // TODO
+        return false;
+    }
+
+    public static boolean detectQRCode(ScriptObject script){
+        // TODO
+        return false;
+    }
+
+    public static boolean detectQuestionMarks(ScriptObject script){
+        // TODO
+        return false;
+    }
 }

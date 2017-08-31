@@ -1,7 +1,19 @@
 package util;
 
-/**
- * Created by Oliver on 2017/08/31.
- */
 public class Pair {
+    private int x;
+    private int y;
+
+    public Pair(int x, int y){
+        this.x = x;
+        this.y = y;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
 }
