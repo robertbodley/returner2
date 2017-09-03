@@ -1,6 +1,4 @@
-.idea/*
-returner2.iml
-p.RAW
+*.RAW
 *.png
 out/*
 out
