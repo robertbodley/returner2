@@ -1,3 +1,4 @@
+import com.google.zxing.Result;
 import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import detection.Detection;
 import util.Preprocessor;
@@ -15,6 +16,19 @@ public class RecognitionModule {
             System.out.println("No command line args entered");
         }
 
+        //position of reference
+        long t = System.nanoTime();
+        BufferedImage bi = ImageIO.read(new File("../imgs/qrStraight.jpg"));
+        Result result = Detection.readQRCode(bi);
+//        float posX = result.getResultPoints()[1].getX();
+//        float posY = result.getResultPoints()[1].getY();
+        System.out.println((System.nanoTime() - t )/1000000000.0);
+        System.out.println(result.getText());
+        System.out.println(result.getResultMetadata());
+        for (int i = 0; i < 3; i++) {
+            System.out.println(result.getResultPoints()[i].getX()+ " : " + result.getResultPoints()[i].getY());
+        }
+/*
         File file = new File("p.png");
 //        File file = new File("p.RAW");
 

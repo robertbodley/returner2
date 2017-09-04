@@ -24,7 +24,8 @@ public class Straighten {
         long t = System.nanoTime();
         //read our original image
 
-        Mat image = Imgcodecs.imread("rotatedWITHQRr.jpg");
+        Mat image = Imgcodecs.imread("../imgs/rotatedWITHQRr.jpg");
+
 
         //Straight it out! :)
         Mat straightImage = m.straightenImage(image);
@@ -43,7 +44,7 @@ public class Straighten {
         Imgproc.morphologyEx(binary, binary, Imgproc.MORPH_CLOSE, kernel);
         //Convert the image to gray from RGB
         Imgproc.cvtColor(binary, binary, Imgproc.COLOR_BGR2GRAY);
-//        Imgcodecs.imwrite("processedImage.jpg", binary);
+        Imgcodecs.imwrite("processedImage.jpg", binary);
         return binary;
     }
 
@@ -79,7 +80,7 @@ public class Straighten {
             angle = calculateAngleFromPoints(start, end);
         }
 
-//        Imgcodecs.imwrite("detectedLines.jpg", debugImage);
+        Imgcodecs.imwrite("detectedLines.jpg", debugImage);
 
         return angle;
     }
@@ -110,10 +111,13 @@ public class Straighten {
     //Sums the whole process and returns with the straight image
     private Mat straightenImage(Mat image) {
         Mat rotatedImage = image.clone();
-//        Mat processed = preProcessForAngleDetection(image);
-//        double rotationAngle = detectRotationAngle(processed);
+        Mat processed = preProcessForAngleDetection(image);
 
-        return rotateImage(rotatedImage, 2.5);
+        double rotationAngle = detectRotationAngle(processed);
+
+        System.out.println(rotationAngle);
+
+        return rotateImage(rotatedImage, rotationAngle);
     }
 
 
