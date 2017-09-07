@@ -24,12 +24,11 @@ public class Straighten {
         long t = System.nanoTime();
         //read our original image
 
-        Mat image = Imgcodecs.imread("../imgs/rotatedWITHQRr.jpg");
-
+        Mat image = Imgcodecs.imread("../imgs/testcover.pdf");
 
         //Straight it out! :)
-        Mat straightImage = m.straightenImage(image);
-        Imgcodecs.imwrite("straightImage.jpg", straightImage);
+//        Mat straightImage = m.straightenImage(image);
+//        Imgcodecs.imwrite("straightImage.jpg", straightImage);
         System.out.println((System.nanoTime() - t)/1000000000.0);
     }
 
@@ -109,15 +108,15 @@ public class Straighten {
     }
 
     //Sums the whole process and returns with the straight image
-    private Mat straightenImage(Mat image) {
+    public Mat straightenImage(Mat image, double angle) {
         Mat rotatedImage = image.clone();
-        Mat processed = preProcessForAngleDetection(image);
+//        Mat processed = preProcessForAngleDetection(image);
 
-        double rotationAngle = detectRotationAngle(processed);
+//        double rotationAngle = detectRotationAngle(processed);
 
-        System.out.println(rotationAngle);
+//        System.out.println(rotationAngle);
 
-        return rotateImage(rotatedImage, rotationAngle);
+        return rotateImage(rotatedImage, angle);
     }
 
 
