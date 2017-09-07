@@ -1,11 +1,17 @@
 import com.google.zxing.Result;
 import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import detection.Detection;
+import util.Pair;
 import util.Preprocessor;
 import util.ScriptObject;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.FilteredImageSource;
+import java.awt.image.ImageFilter;
+import java.awt.image.ImageProducer;
 import java.io.*;
 
 public class RecognitionModule {
@@ -17,70 +23,28 @@ public class RecognitionModule {
         }
 
         //position of reference
-        long t = System.nanoTime();
-        BufferedImage bi = ImageIO.read(new File("../imgs/qrStraight.jpg"));
+
+        BufferedImage bi = ImageIO.read(new File("C:\\Users\\Aspire\\Desktop\\CSC3003S-Quiz-700-1.jpg"));
         Result result = Detection.readQRCode(bi);
 //        float posX = result.getResultPoints()[1].getX();
 //        float posY = result.getResultPoints()[1].getY();
-        System.out.println((System.nanoTime() - t )/1000000000.0);
         System.out.println(result.getText());
         System.out.println(result.getResultMetadata());
+        Pair[] pairs = new Pair[3];
         for (int i = 0; i < 3; i++) {
-            System.out.println(result.getResultPoints()[i].getX()+ " : " + result.getResultPoints()[i].getY());
+            System.out.println(result.getResultPoints()[i].getX() + " : " + result.getResultPoints()[i].getY());
+            Pair a = new Pair(result.getResultPoints()[i].getX(), result.getResultPoints()[i].getY());
+            pairs[i] = a;
         }
-/*
-        File file = new File("p.png");
-//        File file = new File("p.RAW");
-
-        ByteArrayOutputStream baos=new ByteArrayOutputStream(1000);
-        BufferedImage img= ImageIO.read(file);
-        ImageIO.write(img, "png", baos);
-        baos.flush();
-
-        String base64String=Base64.encode(baos.toByteArray());
-        baos.close();
-
-        byte[] bytearray = Base64.decode(base64String);
-        for(byte b : bytearray){
-            System.out.println(b);
-        }
-
-       /* FileInputStream fis = new FileInputStream(file);
-        //create FileInputStream which obtains input bytes from a file in a file system
-        //FileInputStream is meant for reading streams of raw bytes such as image data. For reading streams of characters, consider using FileReader.
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        byte[] buf = new byte[1024];
-        try {
-            for (int readNum; (readNum = fis.read(buf)) != -1;) {
-                //Writes to this byte array output stream
-                bos.write(buf, 0, readNum);
-                System.out.println("read " + readNum + " bytes,");
-//                if buf
-                for (byte b: buf
-                     ) {
-                    System.out.print((int) b+" ");
-                }
-                System.out.println();
-            }
-        } catch (IOException ex) {
-            System.out.println("FAILED TO OPEN");
-        }
-
-        byte[] bytes = bos.toByteArray();
-//        for (byte b : bytes)
-//            System.out.println(b);
-*/
+        //Detection.scaling(pairs);
+        long t = System.nanoTime();
+        BufferedImage bi2 = ImageIO.read(new File("C:\\Users\\Aspire\\Desktop\\B&WTest3.png"));
+        Detection.detectStudentNumber(Detection.scaling(pairs),bi2);//MUST FEED IN A GREYSCALED BUFFEREDIMAGE
+        System.out.println((System.nanoTime() - t )/1000000000.0);
 
         String PDFFilePath = "";
         Preprocessor preprocessor = new Preprocessor();
-
         preprocessor.splitScripts(PDFFilePath);
         preprocessor.process();
-/*
-        for (ScriptObject script : preprocessor.getScripts()){
-            Detection.detectStudentNumber(script);
-            Detection.detectQuestionMarks(script);
-        }*/
     }
 }

@@ -14,6 +14,11 @@ import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
 public class Straighten {
 
     public static void main(String[] args) {
@@ -24,12 +29,12 @@ public class Straighten {
         long t = System.nanoTime();
         //read our original image
 
-        Mat image = Imgcodecs.imread("../imgs/rotatedWITHQRr.jpg");
+        Mat image = Imgcodecs.imread("C:\\Users\\Aspire\\Desktop\\CSC3003S-Quiz-700-1.jpg");
 
 
         //Straight it out! :)
         Mat straightImage = m.straightenImage(image);
-        Imgcodecs.imwrite("straightImage.jpg", straightImage);
+        Imgcodecs.imwrite("C:\\Users\\Aspire\\Desktop\\B&WTest3.png", straightImage);
         System.out.println((System.nanoTime() - t)/1000000000.0);
     }
 
@@ -50,7 +55,7 @@ public class Straighten {
 
     //With this we can detect the rotation angle
     //After this function returns we will know the necessary angle
-    private double detectRotationAngle(Mat binaryImage) {
+    /*private double detectRotationAngle(Mat binaryImage) {
         //Store line detections here
         Mat lines = new Mat();
         //Detect lines
@@ -83,17 +88,17 @@ public class Straighten {
         Imgcodecs.imwrite("detectedLines.jpg", debugImage);
 
         return angle;
-    }
+    }*/
 
     //From an end point and from a start point we can calculate the angle
-    private double calculateAngleFromPoints(Point start, Point end) {
+   /* private double calculateAngleFromPoints(Point start, Point end) {
         double deltaX = end.x - start.x;
         double deltaY = end.y - start.y;
         return Math.atan2(deltaY, deltaX) * (180 / Math.PI);
-    }
+    }*/
 
     //Rotation is done here
-    private Mat rotateImage(Mat image, double angle) {
+    /*private Mat rotateImage(Mat image, double angle) {
         //Calculate image center
         Point imgCenter = new Point(image.cols() / 2, image.rows() / 2);
         //Get the rotation matrix
@@ -106,18 +111,19 @@ public class Straighten {
         Imgproc.warpAffine(image, rotatedImage, rotMtx, bbox.size());
 
         return rotatedImage;
-    }
+    }*/
 
     //Sums the whole process and returns with the straight image
     private Mat straightenImage(Mat image) {
         Mat rotatedImage = image.clone();
         Mat processed = preProcessForAngleDetection(image);
 
-        double rotationAngle = detectRotationAngle(processed);
+        //double rotationAngle = detectRotationAngle(processed);
 
-        System.out.println(rotationAngle);
+        //System.out.println(rotationAngle);
 
-        return rotateImage(rotatedImage, rotationAngle);
+        //return rotateImage(rotatedImage, rotationAngle);
+        return processed;
     }
 
 

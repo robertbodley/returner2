@@ -1,19 +1,19 @@
 package util;
 
 public class Pair {
-    private int x;
-    private int y;
+    private float x;
+    private float y;
 
-    public Pair(int x, int y){
+    public Pair(float x, float y){
         this.x = x;
         this.y = y;
     }
 
-    public int getX() {
+    public float getX() {
         return x;
     }
 
-    public int getY() {
+    public float getY() {
         return y;
     }
 }
