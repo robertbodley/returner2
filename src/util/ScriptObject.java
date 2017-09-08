@@ -1,15 +1,16 @@
 package util;
 
+import java.awt.image.BufferedImage;
+
 public class ScriptObject {
 
-    // not sure if would be int array or char array ?
-    private int[][] rawPixels;
     private int[] marksPerQuestion;
     private QRCode qrCodeProperties;
     private String studentNumber;
+    private BufferedImage image;
 
-    public ScriptObject(int[][] rawPixels){
-        this.rawPixels = rawPixels;
+    public ScriptObject(BufferedImage img){
+        this.image = img;
     }
 
     public String toString() {
@@ -19,8 +20,8 @@ public class ScriptObject {
         return "";
     }
 
-    public int[][] getRawPixels() {
-        return rawPixels;
+    public BufferedImage getImage() {
+        return image;
     }
 
     public int[] getMarksPerQuestion() {
