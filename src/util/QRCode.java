@@ -21,5 +21,9 @@ public class QRCode {
         return QRCodeCornerCoordinates;
     }
 
+    public Result getResult(){
+        return QRCode;
+    }
+
 
 }

@@ -1,11 +1,13 @@
 package detection;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.Result;
+import com.google.zxing.ResultPoint;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.QRCodeReader;
 import util.Pair;
 
+import util.QRCode;
 import util.ScriptObject;
 
 import javax.imageio.ImageIO;
@@ -20,13 +22,15 @@ import java.io.IOException;
 
 public class Detection {
 
-    public static void detectStudentNumber(Pair scalingFactor, BufferedImage img){
+    public static void detectStudentNumber(Pair scalingFactor, BufferedImage img, QRCode qr){
 
-        float startY = 999 * scalingFactor.getY();
+        float startY =  (float) (qr.getQRCodeCornerCoordinates()[1].getY() + ((1003 - 682.5) * scalingFactor.getY()));
+//        float startY = (999 - qr.getQRCodeCornerCoordinates()[1].getY())
         float currentY;
-        float startX = 196 * scalingFactor.getX();
+//        float startX = 196 * scalingFactor.getX();
+        float startX = (qr.getQRCodeCornerCoordinates()[1].getX() -( (609 - 195) * scalingFactor.getX()));
         float currentX = startX;
-        int thresh = 400 * (int) ((scalingFactor.getX() + scalingFactor.getY()) / 2);
+        float thresh = 300 *  ((scalingFactor.getX() + scalingFactor.getY()) / 2);
         System.out.println("THRESHOLD" + thresh);
         int pixelCount;
 
@@ -39,14 +43,14 @@ public class Detection {
             currentY = startY;
             c = 65;
 
-            currentX = startX + (b * (25 + 31) * scalingFactor.getX());
+            currentX = startX + (b * (25 + 30) * scalingFactor.getX());
 
             for(int l = 0; l < 25; l ++) {
                 pixelCount = 0;
 
-                for (int y = (int) currentY; y < currentY + 24 * scalingFactor.getY(); y++) {
+                for (int y = (int) currentY; y < currentY + (24 * scalingFactor.getY()); y++) {
 
-                    for (int x = (int) currentX; x < currentX + 25 * scalingFactor.getX(); x++) {
+                    for (int x = (int) currentX; x < currentX + (25 * scalingFactor.getX()); x++) {
                         if (pixelCount > thresh)
                             break;
 
@@ -68,8 +72,6 @@ public class Detection {
             }
             s += (char) c;
             System.out.println( s);
-
-            currentX += 30 * scalingFactor.getX();
         }
     }
 
@@ -94,14 +96,20 @@ public class Detection {
         return false;
     }
 
-    public static Pair calculateScalingFactor(Pair p[]) {
+    public static Pair calculateScalingFactor(Result result) {
+
+        ResultPoint[] points = result.getResultPoints();
+        ResultPoint dist = new ResultPoint(0,0);
+
 //right left bottom
         float originX = (float) (749.00 - 609.00);
         float originY = (float) (830.5 - 682.5);
 
 //        System.out.println("Scale calculation:\n");
-        float x = Math.abs((p[0].getX() - p[1].getX()) / originX);
-        float y = Math.abs((p[2].getY() - p[1].getY()) / originY);
-        return new Pair(1, 1);
+//        bi.setRGB(p[0].getX(), p[0].getY());
+        float x = dist.distance(points[0], points[1]) / originX;
+        float y = dist.distance(points[2], points[1]) / originY;
+        System.out.println("SF: " + x + "   " + y);
+        return new Pair(x, y);
     }
 }
