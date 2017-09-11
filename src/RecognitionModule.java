@@ -1,6 +1,4 @@
-import com.google.zxing.ResultPoint;
 import detection.Detection;
-import sun.font.Script;
 import util.Pair;
 import util.Preprocessor;
 import util.QRCode;
@@ -19,7 +17,7 @@ public class RecognitionModule {
                 debugMode = true;
         }
 
-        String imgFile = "../scans/3deg.jpg";
+        String imgFile = "../scans/base.jpg";
         long t = System.nanoTime();
 
         Preprocessor preprocessor = new Preprocessor(imgFile);
@@ -27,16 +25,12 @@ public class RecognitionModule {
         ScriptObject script = preprocessor.getScript(0);
         QRCode qr = script.getQrCodeProperties();
 
-
         System.out.println("Time after rotation and QR detection: " + (System.nanoTime() - t )/1000000000.0);
 
-        Pair scalingFactor = Detection.calculateScalingFactor(qr.getResult());
         BufferedImage bi = script.getImage();
-        Detection.detectStudentNumber(scalingFactor, bi, qr);
+        Detection.detectStudentNumber(bi, qr);
         ImageIO.write(bi, "jpg" ,new File("t.jpg"));
 
         System.out.println("Time after student number detection: " + (System.nanoTime() - t )/1000000000.0);
-
-
     }
 }

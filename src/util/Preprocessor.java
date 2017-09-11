@@ -11,19 +11,15 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.util.Arrays;
 
 public class Preprocessor {
     private ScriptObject[] scripts;
-    private int numberOfPages;
-    private int[] maxMarksPerQuestion;
     private String ImgFileLocation;
-
-
 
     public Preprocessor(String imgFile){
         this.ImgFileLocation = imgFile;
@@ -33,20 +29,29 @@ public class Preprocessor {
 
     }
 
-    public Pair[] updateQRCoordinates(Result r){
-        ResultPoint[] points = r.getResultPoints();
-        float y = points[1].getY();
-        float x = points[1].getX() + points[1].distance(points[1], points[0]);
+    public Pair[] projectPoints(Pair[] points, double angle, double x, double y){
 
-        float y2 = points[1].getY() + points[2].distance(points[1], points[2]);
-        float x2 = points[1].getX();
+        double a = -Math.toRadians(angle);
 
-        Pair[] p = new Pair[3];
-        p[0] = new Pair(x, y);
-        p[1] = new Pair(points[1].getX(), points[1].getY());
-        p[2] = new Pair(x2, y2);
+        points = Arrays.stream(points).map( p -> {
+                return new Pair(
+                        (float) ((p.getX() - x) * Math.cos(a) + x - (p.getY() - y) * Math.sin(a)),
+                        (float) ((p.getY() - y) * Math.cos(a) + y + (p.getX() - x) * Math.sin(a))
+                );
+            }
+        ).toArray(Pair[]::new);
 
-        return p;
+        return points;
+    }
+
+    public BufferedImage fasterImageRead(String filename) throws IOException {
+        // possibility
+        DataInputStream datainputstream = new DataInputStream(getClass().getResourceAsStream("j180.jpg"));
+        System.out.println(datainputstream);
+        byte abyte0[] = new byte[datainputstream.available()];
+        datainputstream.readFully(abyte0);
+        datainputstream.close();
+        return  (BufferedImage) (Toolkit.getDefaultToolkit().createImage(abyte0));
     }
 
     public void process(long t) throws IOException {
@@ -54,81 +59,96 @@ public class Preprocessor {
 
         Straighten straightener = new Straighten();
         BufferedImage bi = ImageIO.read(new File(ImgFileLocation));
+        System.out.println("Time to read in image time " + (System.nanoTime() - t )/1000000000.0 + "\n");
 
-        Result result = Detection.detectQRCode(bi);
-        System.out.println("QRRR " + (System.nanoTime() - t )/1000000000.0);
+
+        Result result = Detection.detectQRCode(bi, t);
+        System.out.println("Time after QR detection " + (System.nanoTime() - t )/1000000000.0 + "\n");
 
         if (result == null){
             // TODO: handle: failure to detect QR code
+            System.out.println("QR CODE NOT FOUND");
+            System.exit(0);
         }
 
-        System.out.println(result.getText());
+        System.out.println("QR data: " + result.getText() + "\n");
         Pair[] QRCodeCornerCoordinates = new Pair[3];
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; i++)
             QRCodeCornerCoordinates[i] = new Pair(result.getResultPoints()[i].getX(), result.getResultPoints()[i].getY());
-            System.out.println(i + QRCodeCornerCoordinates[i].toString());
-        }
 
         double angle = calculateRotationAngle(QRCodeCornerCoordinates);
 
+        System.out.println("converting to mat from BI so that we can straighten.." + (System.nanoTime() - t )/1000000000.0 + "\n");
         Mat image = new Mat(bi.getHeight(), bi.getWidth(), CvType.CV_8UC3);
         image.put(0,0, ((DataBufferByte) bi.getRaster().getDataBuffer()).getData());
+        System.out.println("after MAT conversion" + (System.nanoTime() - t )/1000000000.0+ "\n");
 
-        image = straightener.straightenImage(image, angle, result);
+        QRCodeCornerCoordinates =  projectPoints(QRCodeCornerCoordinates, angle, image.cols()/2, image.rows()/2);
 
-        QRCodeCornerCoordinates =  updateQRCoordinates(result);
+        QRCode qrcode = new QRCode(QRCodeCornerCoordinates, result);
+
+        calculateScalingFactor(qrcode);
+
+        image = straightener.straightenImage(image, angle, qrcode);
 
         Imgproc.threshold(image, image, 190, 255, Imgproc.THRESH_BINARY_INV);
         Imgproc.cvtColor(image, image, Imgproc.COLOR_BGR2GRAY);
 
-//        Imgcodecs.imwrite("straightImage.jpg", image);
-
-        //2
-
-//        byte[] data = new byte[image.rows() * image.cols() * (int) image.elemSize()];
-//        image.get(0,0, data);
-//        bi = new BufferedImage(image.cols(), image.rows(), BufferedImage.TYPE_3BYTE_BGR);
-//        bi.getRaster().setDataElements(0,0,data);
-
-
-//        bi = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
-//        byte[] data = ;
-//        image.get(0,0, ((DataBufferByte) bi.getRaster().getDataBuffer()).getData());
-
-//        ScriptObject script = new ScriptObject( ImageIO.read(new File("straightImage.jpg")));
+        System.out.println("converting from mat to BI so that we can do detection" + (System.nanoTime() - t )/1000000000.0+ "\n");
 
         MatOfByte mob = new MatOfByte();
         Imgcodecs.imencode(".jpg", image, mob);
         bi = ImageIO.read(new ByteArrayInputStream(mob.toArray()));
 
+        System.out.println("after BI conversion" + (System.nanoTime() - t )/1000000000.0+ "\n");
+
         ScriptObject script = new ScriptObject(bi);
-        script.setQrCodeProperties(new QRCode(QRCodeCornerCoordinates, result));
+        script.setQrCodeProperties(qrcode);
         scripts[0] = script;
    }
 
+    public void calculateScalingFactor(QRCode qr) {
+        ResultPoint[] points = qr.getResult().getResultPoints();
+
+        float baseXDistance = (float) (749.00 - 609.00);
+        float baseYDistance = (float) (830.5 - 682.5);
+
+        float x = points[0].distance(points[0], points[1]) / baseXDistance;
+        float y = points[1].distance(points[2], points[1]) / baseYDistance;
+
+        qr.setScalingFactor(new Pair(x, y));
+    }
+
     private double calculateRotationAngle(Pair[] points){
 
-        double angle = 0.0;
+        /*
+            Calculate the angle of rotation by taking looking at the triangle formed by the skew QR code.
+            tan(angle) = opposite / adjacent
+         */
 
         double deltaX = Math.abs(points[0].getX() - points[1].getX());
         double deltaY = Math.abs(points[0].getY() - points[1].getY());
-
-        angle = Math.atan2(deltaY, deltaX);
+//        System.out.println(deltaX + " " + deltaY);
+        double angle = Math.atan2(deltaY, deltaX);
         angle = Math.toDegrees(angle);
-//        System.out.println("Rotation angle detected: " + Math.round(angle));
 
         if (points[1].getY() > points[0].getY() && points[1].getY() > points[2].getY())
-            // upside down and rotated > 180. ie 183 degrees
+            /*
+                If the page is upside down and needs a rotation of > 180.
+                Add 180 because tan only gives you the acute rotation required.
+             */
             angle += 180;
 
         else if (points[1].getY() > points[2].getY())
-            // upside dowm < 180. ie 177
+            /*
+                If the page is upside down but needs a rotation of < 180.
+                Subtract 180 from the angle because tan gives you the acute angle of rotation required.
+             */
             angle = 180 - angle;
 
-        System.out.println("Rotation angle detected: " + (angle));
-        return (angle);
-//        return 1.0;
+        System.out.println("Rotation angle: " + (angle));
+        return angle;
     }
 
 
@@ -149,14 +169,5 @@ public class Preprocessor {
     public ScriptObject getScript(int i){
         return scripts[i];
     }
-
-    public void setNumberOfPages(int numberOfPages){
-        this.numberOfPages = numberOfPages;
-    }
-
-    public void setMaxMarksPerQuestion(int[] maxMarksPerQuestion){
-        this.maxMarksPerQuestion = maxMarksPerQuestion;
-    }
-
 
 }
