@@ -1,3 +1,6 @@
+import com.google.zxing.pdf417.PDF417Reader;
+import com.google.zxing.pdf417.decoder.PDF417ScanningDecoder;
+import com.google.zxing.pdf417.encoder.PDF417;
 import detection.Detection;
 import util.Pair;
 import util.Preprocessor;
@@ -17,7 +20,7 @@ public class RecognitionModule {
                 debugMode = true;
         }
 
-        String imgFile = "../scans/base.jpg";
+        String imgFile = "../new/t/l-3.jpg";
         long t = System.nanoTime();
 
         Preprocessor preprocessor = new Preprocessor(imgFile);
@@ -28,7 +31,8 @@ public class RecognitionModule {
         System.out.println("Time after rotation and QR detection: " + (System.nanoTime() - t )/1000000000.0);
 
         BufferedImage bi = script.getImage();
-        Detection.detectStudentNumber(bi, qr);
+        Detection.detectStudentNumber(script);
+        Detection.detectQuestionMarks(script);
         ImageIO.write(bi, "jpg" ,new File("t.jpg"));
 
         System.out.println("Time after student number detection: " + (System.nanoTime() - t )/1000000000.0);

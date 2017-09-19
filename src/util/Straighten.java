@@ -19,7 +19,7 @@ public class Straighten {
     //Rotation is done here
     private Mat rotateImage(Mat image, double angle, QRCode qr) {
         /*
-            Adapted code by Vecsei to work with angle calculated using QR code coordinates.
+            Adapted code by Vecsei to work with rotation angle calculated using QR code coordinates.
          */
 
         Result r = qr.getResult();
