@@ -7,10 +7,12 @@ public class QRCode {
     private Pair[] QRCodeCornerCoordinates;
     private Result QRCode;
     private Pair scalingFactor;
+    private boolean quizPaper;
 
     public QRCode(Pair[] points, Result result){
         this.QRCodeCornerCoordinates = points;
         this.QRCode = result;
+        quizPaper = result.getText().contains("quiz");
     }
 
     public String getData(){
@@ -23,6 +25,10 @@ public class QRCode {
 
     public Result getResult(){
         return QRCode;
+    }
+
+    public boolean isQuizPaper(){
+        return quizPaper;
     }
 
     public void setScalingFactor(Pair sf){

@@ -17,7 +17,6 @@ import java.awt.image.DataBufferByte;
 import java.io.*;
 import java.util.Arrays;
 
-import static org.opencv.core.CvType.CV_8UC;
 
 public class Preprocessor {
     private ScriptObject[] scripts;
@@ -35,7 +34,7 @@ public class Preprocessor {
 
     public Pair[] projectPoints(Pair[] points, double angle, double x, double y){
 
-        double a = - Math.toRadians(angle);
+        double a =  Math.toRadians(- angle);
 
         points = Arrays.stream(points).map( p -> {
                 return new Pair(
@@ -44,7 +43,7 @@ public class Preprocessor {
                 );
             }
         ).toArray(Pair[]::new);
-
+        System.out.println("Points after projection:");
         for (Pair p : points)
             System.out.println(p);
 
@@ -93,6 +92,7 @@ public class Preprocessor {
         double angle = calculateRotationAngle(QRCodeCornerCoordinates);
 
         System.out.println("converting to mat from BI so that we can straighten.." + (System.nanoTime() - t )/1000000000.0 + "\n");
+
         Mat image = new Mat(bi.getHeight(), bi.getWidth(), CvType.CV_8UC1);
         image.put(0,0, ((DataBufferByte) bi.getRaster().getDataBuffer()).getData());
         System.out.println("after MAT conversion" + (System.nanoTime() - t )/1000000000.0+ "\n");
@@ -106,9 +106,6 @@ public class Preprocessor {
         image = straightener.straightenImage(image, angle, qrcode);
 
         Imgproc.threshold(image, image, 190, 255, Imgproc.THRESH_BINARY_INV);
-//        Imgproc.cvtColor(image, image, Imgproc.COLOR_BGR2GRAY);
-//        Imgproc.cvtColor(image, image, Imgproc.COLOR_GRAY2BGR);
-
 
         System.out.println("after grayscale and straightening: converting from mat to BI" + (System.nanoTime() - t )/1000000000.0+ "\n");
 
@@ -126,8 +123,8 @@ public class Preprocessor {
     public void calculateScalingFactor(QRCode qr) {
         ResultPoint[] points = qr.getResult().getResultPoints();
 
-        float baseXDistance = (float) (707 - 471);
-        float baseYDistance = (float) (984 - 747);
+        float baseXDistance = (float) (1051.5 - 715);
+        float baseYDistance = (float) (1354.5 - 1018);
 
         float x = ResultPoint.distance(points[2], points[1]) / baseXDistance;
         float y = ResultPoint.distance(points[0], points[1]) / baseYDistance;
@@ -156,7 +153,7 @@ public class Preprocessor {
              */
             angle += 180;
 
-        else if (points[1].getY() > points[0].getY())
+        else if (points[1].getY() > points[0].getY() && points[1].getY() != points[2].getY())
             /*
                 If the page is upside down but needs a rotation of < 180.
                 Subtract 180 from the angle because tan gives you the acute angle of rotation required.

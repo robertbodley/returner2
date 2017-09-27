@@ -13,42 +13,141 @@ import java.awt.image.BufferedImage;
 
 public class Detection {
 
-    private static final float boxWidth = (float) 20.5;
+    private static final float boxWidth = (float) 43;
     private static final float boxHeight = (float) 44;
-    private static final float horizontalDistanceToNextBox = 36;
-    private static final float verticalDistanceToNextBox = 19;
+    private static final float studentNumberHorizontalDistanceToNextBox = 41;
+    private static final float studentNumberVerticalDistanceToNextBox = 19;
 
-    private static final float marksVerticalDistanceToNextBox = (float) 21.05;
-    private static final float marksHoritzontalDistanceToNextBox = (float) 37.5;
+    private static final float quizAnswerVerticalDistanceToNextBox = (float) 22;
+    private static final float quizAnswerHorizontalDistanceToNextBox = (float) 44;
+
+    private static final float testAnswerVerticalDistanceToNextBox = (float) 22;
+    private static final float testAnswerHorizontalDistanceToNextBox = (float) 42;
     /*
         QUIZ PAPER:
-        Answer blocks start point: (856, 831) // 876
+        Answer blocks start point: (1284, 1141)
         Stu Num block start point: (288, 1600)
-        QR point 1 coordinates   : (471, 747)
+        QR point 1 coordinates   : (715.0, 1018.0)
 
         TEST PAPER:
-        Answer blocks start point: ()
-        Stu Num blck start point : (192, 1141)
+        Answer blocks start point 1: (1290, 1180)
+        Answer blocks start point 2: (1290, 2097)
+        Stu Num blck start point   : (192, 1141)
+        QR point 1 coordinates     : (715.0, 991.0)
+
      */
-    private static final float marksBoxesVerticalDistanceFromQR = 831 - 747;
-    private static final float marksBoxesHorizontalDistanceFromQR = 856 - 471;
+    private static final float quizAnswersBoxesVerticalDistanceFromQR = 1141 - 1018;
+    private static final float quizAnswersBoxesHorizontalDistanceFromQR = 1284 - 715;
 
-    private static final float studentNumberBoxesVerticalDistanceFromQR = 1141 - 747;
-    private static final float studentNumberBoxesHorizontalDistanceFromQR = 471 - 192;
+    private static final float testPoint1AnswersBoxesVerticalDistanceFromQR = 1180 - 991;
+    private static final float testPointAnswersBoxesHorizontalDistanceFromQR = 1290 - 715;
+    private static final float testPoint2AnswersBoxesVerticalDistanceFromQR = 2097 - 991;
 
+    private static final float studentNumberBoxesVerticalDistanceFromQR = 1600 - 1018;
+    private static final float studentNumberBoxesHorizontalDistanceFromQR = 715 - 288;
 
-    public static void detectQuestionMarks(ScriptObject script, boolean quizPaper) {
+    public static void detectTestMarks(ScriptObject script){
         QRCode qr = script.getQrCodeProperties();
         Pair scalingFactor = qr.getScalingFactor();
         BufferedImage img = script.getImage();
 
-        float scaledBoxVerticalDistanceRelativeToQRCoordinates = marksBoxesVerticalDistanceFromQR * scalingFactor.getY();
-        float scaledBoxHorizontalDistanceRelativeToQRCoordinates = marksBoxesHorizontalDistanceFromQR * scalingFactor.getX();
+        String[] qrdata = qr.getData().split("---");
+        int numberOfQuestions = Integer.parseInt(qrdata[1]);
+
+        float firstScaledBoxVerticalDistanceRelativeToQRCoordinates = testPoint1AnswersBoxesVerticalDistanceFromQR * scalingFactor.getY();
+        float secondScaledBoxVerticalDistanceRelativeToQRCoordinates = testPoint2AnswersBoxesVerticalDistanceFromQR * scalingFactor.getY();
+        float scaledBoxHorizontalDistanceRelativeToQRCoordinates = testPointAnswersBoxesHorizontalDistanceFromQR * scalingFactor.getX();
 
         float scaledBoxWidth = boxWidth * scalingFactor.getX();
         float scaledBoxHeight = boxHeight * scalingFactor.getY();
-        float scaledHorizontalDistanceToNextBox = marksHoritzontalDistanceToNextBox * scalingFactor.getX();
-        float scaledVerticalDistanceToNextBox = marksVerticalDistanceToNextBox * scalingFactor.getY();
+        float scaledHorizontalDistanceToNextBox = testAnswerHorizontalDistanceToNextBox * scalingFactor.getX();
+        float scaledVerticalDistanceToNextBox = testAnswerVerticalDistanceToNextBox * scalingFactor.getY();
+
+        float firstStartY = qr.getQRCodeCornerCoordinates()[1].getY() + firstScaledBoxVerticalDistanceRelativeToQRCoordinates;
+        float secondStartY = qr.getQRCodeCornerCoordinates()[1].getY() + secondScaledBoxVerticalDistanceRelativeToQRCoordinates;
+        float startX = qr.getQRCodeCornerCoordinates()[1].getX() + scaledBoxHorizontalDistanceRelativeToQRCoordinates;
+        float currentX, currentY;
+
+        float thresh = (scaledBoxHeight * scaledBoxWidth) / 3;
+        int pixelCount;
+
+        int[] marks = new int[numberOfQuestions];
+        numberOfQuestions = numberOfQuestions > 10 ? 10 : numberOfQuestions;
+        int newMark = 0, oldMark = 0;
+
+        for (int questions = 0; questions < numberOfQuestions * 2; questions++) {
+
+            currentY = questions < 10 ? firstStartY : secondStartY;
+            currentX =
+                    questions < 10 ?
+                    startX + questions * (scaledBoxWidth + scaledHorizontalDistanceToNextBox) :
+                    startX + (questions - 10) * (scaledBoxWidth + scaledHorizontalDistanceToNextBox);
+
+            for (int box = 0; box < 10; box++) {
+                pixelCount = 0;
+
+                for (int y = (int) currentY; y < currentY + scaledBoxHeight; y++) {
+
+                    for (int x = (int) currentX; x < currentX + scaledBoxWidth; x++) {
+
+                        if (pixelCount > thresh)
+                            break;
+
+                        try {
+                            if ((img.getRGB(x, y) & 0xFFFFFF) == 0xFFFFFF)
+                                // if current pixel is white then increment pixel count
+                                // shaded in boxes would have white pixels due to the gray scaling
+                                pixelCount++;
+
+                            // TODO: only change pixel value and output a file if running in debug mode
+                            img.setRGB(x, y, 0xd3d3d3);
+                        }catch(Exception ex){
+                            System.out.println("x, y" + x  +" , " + y);
+                        }
+                    }
+                    if (pixelCount > thresh)
+                        break;
+                    if (questions % 2 == 0){
+                        oldMark = box;
+                    }else{
+                        newMark = box;
+                    }
+
+                }
+                if (pixelCount > thresh)
+                    break;
+                currentY += scaledBoxHeight + scaledVerticalDistanceToNextBox;
+            }
+            if (questions % 2 != 0){
+                System.out.println("oldmark, newmark" + oldMark + ", " + newMark);
+                marks[questions / 2] = (oldMark * 10) + newMark;
+                System.out.println("Question "+ questions + ": " + marks[questions/2]);
+            }
+        }
+
+        for (int m : marks) {
+            System.out.print( m+ ", ");
+        }
+        System.out.println();
+    }
+
+    public static void detectQuizMarks(ScriptObject script) {
+
+        QRCode qr = script.getQrCodeProperties();
+        Pair scalingFactor = qr.getScalingFactor();
+        BufferedImage img = script.getImage();
+
+        String[] qrdata = qr.getData().split("---");
+        int numberOfQuestions = Integer.parseInt(qrdata[1]);
+        int numberOfAnswersPerQuestion = Integer.parseInt(qrdata[2]);
+
+        float scaledBoxVerticalDistanceRelativeToQRCoordinates = quizAnswersBoxesVerticalDistanceFromQR * scalingFactor.getY();
+        float scaledBoxHorizontalDistanceRelativeToQRCoordinates = quizAnswersBoxesHorizontalDistanceFromQR * scalingFactor.getX();
+
+        float scaledBoxWidth = boxWidth * scalingFactor.getX();
+        float scaledBoxHeight = boxHeight * scalingFactor.getY();
+        float scaledHorizontalDistanceToNextBox = quizAnswerHorizontalDistanceToNextBox * scalingFactor.getX();
+        float scaledVerticalDistanceToNextBox = quizAnswerVerticalDistanceToNextBox * scalingFactor.getY();
 
         float startY = qr.getQRCodeCornerCoordinates()[1].getY() + scaledBoxVerticalDistanceRelativeToQRCoordinates;
         float startX = qr.getQRCodeCornerCoordinates()[1].getX() + scaledBoxHorizontalDistanceRelativeToQRCoordinates;
@@ -57,16 +156,17 @@ public class Detection {
         float thresh = (scaledBoxHeight * scaledBoxWidth) / 3;
         int pixelCount;
 
-        int[] marks = new int[30];
+        int[] marks = new int[numberOfQuestions];
         int mark;
 
-        for (int questions = 0; questions < 6; questions++) {
+        for (int questions = 0; questions < numberOfQuestions; questions++) {
             currentX = startX;
             mark = 0;
 
-            currentY = startY + questions * (scaledBoxWidth + scaledHorizontalDistanceToNextBox);
 
-            for (int box = 0; box < 30; box++) {
+            currentY = startY + questions * (scaledBoxHeight + scaledVerticalDistanceToNextBox);
+
+            for (int box = 0; box < numberOfAnswersPerQuestion; box++) {
                 pixelCount = 0;
 
                 for (int y = (int) currentY; y < currentY + scaledBoxHeight; y++) {
@@ -74,14 +174,17 @@ public class Detection {
                     for (int x = (int) currentX; x < currentX + scaledBoxWidth; x++) {
                         if (pixelCount > thresh)
                             break;
-                        if ((img.getRGB(x, y) & 0xFFFFFF) == 0xFFFFFF)
-                            // if current pixel is white then increase amount of detected pixels.
-                            // shaded in boxes would have white pixels due to the gray scaling
-                            pixelCount++;
+                        try {
+                            if ((img.getRGB(x, y) & 0xFFFFFF) == 0xFFFFFF)
+                                // if current pixel is white then increment pixel count.
+                                // shaded in boxes would have white pixels due to the gray scaling
+                                pixelCount++;
 
-                        // TODO: only change pixel value and output a file if running in debug mode
-                        img.setRGB(x, y, 0xd3d3d3);
-
+                            // TODO: only change pixel value and output a file if running in debug mode
+                            img.setRGB(x, y, 0xd3d3d3);
+                        }catch(Exception ex){
+                                System.out.println("x, y" + x  +" , " + y);
+                            }
                     }
                     if (pixelCount > thresh)
                         break;
@@ -96,9 +199,9 @@ public class Detection {
         }
 
         for (int m : marks) {
-            System.out.println("mark    " + m);
+            System.out.print( m+ ", ");
         }
-
+        System.out.println();
     }
 
     public static void detectStudentNumber(ScriptObject script) {
@@ -111,16 +214,12 @@ public class Detection {
 
         float scaledBoxWidth = boxWidth * scalingFactor.getX();
         float scaledBoxHeight = boxHeight * scalingFactor.getY();
-        float scaledHorizontalDistanceToNextBox = horizontalDistanceToNextBox * scalingFactor.getX();
-        float scaledVerticalDistanceToNextBox = verticalDistanceToNextBox * scalingFactor.getY();
-
-        System.out.println(scaledBoxHeight + " " + scaledBoxWidth + " " + scaledHorizontalDistanceToNextBox + " " + scaledVerticalDistanceToNextBox);
+        float scaledHorizontalDistanceToNextBox = studentNumberHorizontalDistanceToNextBox * scalingFactor.getX();
+        float scaledVerticalDistanceToNextBox = studentNumberVerticalDistanceToNextBox * scalingFactor.getY();
 
         float startY = qr.getQRCodeCornerCoordinates()[1].getY() + scaledBoxVerticalDistanceRelativeToQRCoordinates;
         float startX = qr.getQRCodeCornerCoordinates()[1].getX() - scaledBoxHorizontalDistanceRelativeToQRCoordinates;
         float currentX, currentY;
-        System.out.println("qr point 1 x: " + qr.getQRCodeCornerCoordinates()[1].getX() + " y : " + qr.getQRCodeCornerCoordinates()[1].getY());
-        System.out.println("START X " + startX + " " + startY);
 
         float thresh = (scaledBoxHeight * scaledBoxWidth) / 3;
         System.out.println("Scaled threshold value: " + thresh);
@@ -130,7 +229,7 @@ public class Detection {
         for (int columns = 0; columns < 9; columns++) {
 
             currentY = startY;
-            currentCharacter = columns < 6 ? 64 : -1;
+            currentCharacter = (int) '!';
             currentX = startX + (columns * (scaledBoxWidth + scaledHorizontalDistanceToNextBox));
 
             for (int characters = 0; columns < 6 ? characters < 26 : characters < 10; characters++) {
@@ -141,11 +240,13 @@ public class Detection {
 
                     for (int x = (int) currentX; x < currentX + scaledBoxWidth; x++) {
 
-                        if (pixelCount > thresh)
+                        if (pixelCount > thresh) {
+                            currentCharacter = characters;
                             break;
+                        }
                         try {
                             if ((img.getRGB(x, y) & 0xFFFFFF) == 0xFFFFFF)
-                                // if current pixel is white then increase amount of detected pixels.
+                                // if current pixel is white then increment pixel count.
                                 // shaded in boxes would have white pixels due to the gray scaling
                                 pixelCount++;
 
@@ -157,20 +258,23 @@ public class Detection {
                             System.exit(0);
                         }
                     }
-                    if (pixelCount > thresh)
+                    if (pixelCount > thresh){
+                        currentCharacter = characters;
                         break;
+                    }
                 }
-
-//                if (characters == 9 && columns > 5)
-//                    System.out.println("characters and cols");
-                if (pixelCount > thresh)
+                if (pixelCount > thresh){
+                    currentCharacter = characters;
                     break;
-                currentY = startY + characters * (scaledBoxHeight + scaledVerticalDistanceToNextBox);
-                currentCharacter++;
-
+                }
+                currentY += (scaledBoxHeight + scaledVerticalDistanceToNextBox);
             }
-            if (columns < 6)
-                studentNumber += (char) currentCharacter;
+            if (columns < 6){
+                if (currentCharacter == (int)'!')
+                    studentNumber += '!';
+                else
+                    studentNumber += (char) (65 + currentCharacter);
+            }
             else
                 studentNumber += currentCharacter;
         }
@@ -178,9 +282,6 @@ public class Detection {
     }
 
     public static Result detectQRCode(BufferedImage bi) {
-//        Map<DecodeHintType, Object> hints = new HashMap<>();
-//        hints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
-//        hints.put(DecodeHintType.PURE_BARCODE, Boolean.TRUE);
         try {
             BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(new BufferedImageLuminanceSource(bi)));
             return new QRCodeReader().decode(binaryBitmap);
@@ -188,6 +289,4 @@ public class Detection {
             return null;
         }
     }
-
-
 }
