@@ -16,7 +16,8 @@ public class RecognitionModule {
                 debugMode = true;
         }
 
-        String imgFile = "../new/quizbase.jpg";
+        String imgFile = "../newer/scans/l-1.jpg";
+//        String imgFile = "test.jpg";
         long t = System.nanoTime();
 
         Preprocessor preprocessor = new Preprocessor(imgFile);
@@ -27,12 +28,13 @@ public class RecognitionModule {
         System.out.println("Time after rotation and QR detection: " + (System.nanoTime() - t )/1000000000.0);
 
         BufferedImage bi = script.getImage();
-        Detection.detectStudentNumber(script);
+        System.out.println(Detection.detectStudentNumber(script));
         if (qr.isQuizPaper())
             Detection.detectQuizMarks(script);
         else
             Detection.detectTestMarks(script);
-        ImageIO.write(bi, "jpg" ,new File("t.jpg"));
+        ImageIO.write(bi, "jpg" ,new File("out.jpg"));
+
 
         System.out.println("Time after student number detection: " + (System.nanoTime() - t )/1000000000.0);
     }

@@ -65,9 +65,10 @@ public class Preprocessor {
         // TODO: modularise, delegate into other methods
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
+
         Straighten straightener = new Straighten();
         BufferedImage bi = ImageIO.read(new File(ImgFileLocation));
-        System.out.println(bi.getType());
+//        System.out.println(bi.getType());
 
         System.out.println("Time to read in image time " + (System.nanoTime() - t )/1000000000.0 + "\n");
 
@@ -78,6 +79,11 @@ public class Preprocessor {
         if (result == null){
             // TODO: handle: failure to detect QR code
             System.out.println("QR CODE NOT FOUND");
+            Mat image = new Mat(bi.getHeight(), bi.getWidth(), CvType.CV_8UC1);
+            image.put(0,0, ((DataBufferByte) bi.getRaster().getDataBuffer()).getData());
+
+            Imgproc.threshold(image, image, 190, 255, Imgproc.THRESH_BINARY_INV);
+            Imgcodecs.imwrite("test.jpg", image);
             System.exit(0);
         }
 
@@ -123,8 +129,8 @@ public class Preprocessor {
     public void calculateScalingFactor(QRCode qr) {
         ResultPoint[] points = qr.getResult().getResultPoints();
 
-        float baseXDistance = (float) (1051.5 - 715);
-        float baseYDistance = (float) (1354.5 - 1018);
+        float baseXDistance = (float) (2103 - 1430.5);
+        float baseYDistance = (float) (2787 - 2114);
 
         float x = ResultPoint.distance(points[2], points[1]) / baseXDistance;
         float y = ResultPoint.distance(points[0], points[1]) / baseYDistance;
@@ -144,22 +150,6 @@ public class Preprocessor {
         System.out.println(deltaX + " " + deltaY);
         double angle = Math.atan2(deltaY, deltaX);
         angle = Math.toDegrees(angle);
-        System.out.println(angle);
-
-        if (points[1].getY() > points[2].getY() && points[1].getY() > points[0].getY())
-            /*
-                If the page is upside down and needs a rotation of > 180.
-                Add 180 because tan only gives you the acute rotation required.
-             */
-            angle += 180;
-
-        else if (points[1].getY() > points[0].getY() && points[1].getY() != points[2].getY())
-            /*
-                If the page is upside down but needs a rotation of < 180.
-                Subtract 180 from the angle because tan gives you the acute angle of rotation required.
-             */
-            angle = 180 - angle;
-
         System.out.println("Rotation angle: " + (angle));
         return angle;
     }

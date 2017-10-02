@@ -1,6 +1,7 @@
 package detection;
 
 import com.google.zxing.BinaryBitmap;
+import com.google.zxing.DecodeHintType;
 import com.google.zxing.Result;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
@@ -10,41 +11,42 @@ import util.QRCode;
 import util.ScriptObject;
 
 import java.awt.image.BufferedImage;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Detection {
 
-    private static final float boxWidth = (float) 43;
-    private static final float boxHeight = (float) 44;
-    private static final float studentNumberHorizontalDistanceToNextBox = 41;
-    private static final float studentNumberVerticalDistanceToNextBox = 19;
+    private static final float boxWidth = (float) 88;
+    private static final float boxHeight = (float) 88;
 
-    private static final float quizAnswerVerticalDistanceToNextBox = (float) 22;
-    private static final float quizAnswerHorizontalDistanceToNextBox = (float) 44;
+    private static final float studentNumberHorizontalDistanceToNextBox = 81;
+    private static final float studentNumberVerticalDistanceToNextBox = 36;
 
-    private static final float testAnswerVerticalDistanceToNextBox = (float) 22;
-    private static final float testAnswerHorizontalDistanceToNextBox = (float) 42;
+    private static final float quizAnswerHorizontalDistanceToNextBox = (float) 86.5;
+    private static final float quizAnswerVerticalDistanceToNextBox = (float) 43;
+
+    private static final float testAnswerHorizontalDistanceToNextBox = (float) 80.75;
+    private static final float testAnswerVerticalDistanceToNextBox = (float) 42.85;
+
     /*
         QUIZ PAPER:
-        Answer blocks start point: (1284, 1141)
-        Stu Num block start point: (288, 1600)
-        QR point 1 coordinates   : (715.0, 1018.0)
+        Answer blocks start point: (1284, 1141) -> 2718, 2361
+        Stu Num block start point: (288, 1600) -> 577, 3279
+        QR point 1 coordinates   : (1430.5, 2114.0)
 
         TEST PAPER:
-        Answer blocks start point 1: (1290, 1180)
-        Answer blocks start point 2: (1290, 2097)
-        Stu Num blck start point   : (192, 1141)
-        QR point 1 coordinates     : (715.0, 991.0)
-
+        Answer blocks start point 1: (1290, 1180) -> 2755, 2492
+        Answer blocks start point 2: (1290, 2097) -> 2755, 4326
      */
-    private static final float quizAnswersBoxesVerticalDistanceFromQR = 1141 - 1018;
-    private static final float quizAnswersBoxesHorizontalDistanceFromQR = 1284 - 715;
+    private static final float quizAnswersBoxesVerticalDistanceFromQR = 2361 - 2114;
+    private static final float quizAnswersBoxesHorizontalDistanceFromQR = 2718 - (float)1430.5;
 
-    private static final float testPoint1AnswersBoxesVerticalDistanceFromQR = 1180 - 991;
-    private static final float testPointAnswersBoxesHorizontalDistanceFromQR = 1290 - 715;
-    private static final float testPoint2AnswersBoxesVerticalDistanceFromQR = 2097 - 991;
+    private static final float testPoint1AnswersBoxesVerticalDistanceFromQR = 2492 - 2114;
+    private static final float testPointAnswersBoxesHorizontalDistanceFromQR = 2755 - (float)1430.5;
+    private static final float testPoint2AnswersBoxesVerticalDistanceFromQR = 4326 - 2114;
 
-    private static final float studentNumberBoxesVerticalDistanceFromQR = 1600 - 1018;
-    private static final float studentNumberBoxesHorizontalDistanceFromQR = 715 - 288;
+    private static final float studentNumberBoxesVerticalDistanceFromQR = 3279 - 2114;
+    private static final float studentNumberBoxesHorizontalDistanceFromQR = (float)1430.5 - 577;
 
     public static void detectTestMarks(ScriptObject script){
         QRCode qr = script.getQrCodeProperties();
@@ -68,7 +70,7 @@ public class Detection {
         float startX = qr.getQRCodeCornerCoordinates()[1].getX() + scaledBoxHorizontalDistanceRelativeToQRCoordinates;
         float currentX, currentY;
 
-        float thresh = (scaledBoxHeight * scaledBoxWidth) / 3;
+        float thresh = (scaledBoxHeight * scaledBoxWidth)/ 2;
         int pixelCount;
 
         int[] marks = new int[numberOfQuestions];
@@ -86,9 +88,9 @@ public class Detection {
             for (int box = 0; box < 10; box++) {
                 pixelCount = 0;
 
-                for (int y = (int) currentY; y < currentY + scaledBoxHeight; y++) {
+                for (int y = Math.round(currentY); y < currentY + scaledBoxHeight; y++) {
 
-                    for (int x = (int) currentX; x < currentX + scaledBoxWidth; x++) {
+                    for (int x = Math.round(currentX); x < currentX + scaledBoxWidth; x++) {
 
                         if (pixelCount > thresh)
                             break;
@@ -153,7 +155,7 @@ public class Detection {
         float startX = qr.getQRCodeCornerCoordinates()[1].getX() + scaledBoxHorizontalDistanceRelativeToQRCoordinates;
         float currentX, currentY;
 
-        float thresh = (scaledBoxHeight * scaledBoxWidth) / 3;
+        float thresh = (scaledBoxHeight * scaledBoxWidth)/ 2;
         int pixelCount;
 
         int[] marks = new int[numberOfQuestions];
@@ -169,9 +171,9 @@ public class Detection {
             for (int box = 0; box < numberOfAnswersPerQuestion; box++) {
                 pixelCount = 0;
 
-                for (int y = (int) currentY; y < currentY + scaledBoxHeight; y++) {
+                for (int y = Math.round(currentY); y < currentY + scaledBoxHeight; y++) {
 
-                    for (int x = (int) currentX; x < currentX + scaledBoxWidth; x++) {
+                    for (int x = Math.round(currentX); x < currentX + scaledBoxWidth; x++) {
                         if (pixelCount > thresh)
                             break;
                         try {
@@ -204,7 +206,7 @@ public class Detection {
         System.out.println();
     }
 
-    public static void detectStudentNumber(ScriptObject script) {
+    public static String detectStudentNumber(ScriptObject script) {
         QRCode qr = script.getQrCodeProperties();
         Pair scalingFactor = qr.getScalingFactor();
         BufferedImage img = script.getImage();
@@ -221,7 +223,7 @@ public class Detection {
         float startX = qr.getQRCodeCornerCoordinates()[1].getX() - scaledBoxHorizontalDistanceRelativeToQRCoordinates;
         float currentX, currentY;
 
-        float thresh = (scaledBoxHeight * scaledBoxWidth) / 3;
+        float thresh = (scaledBoxHeight * scaledBoxWidth)/ 2;
         System.out.println("Scaled threshold value: " + thresh);
         int pixelCount, currentCharacter;
         String studentNumber = "";
@@ -236,9 +238,9 @@ public class Detection {
 
                 pixelCount = 0;
 
-                for (int y = (int) currentY; y < currentY + scaledBoxHeight; y++) {
+                for (int y = Math.round(currentY); y < currentY + scaledBoxHeight; y++) {
 
-                    for (int x = (int) currentX; x < currentX + scaledBoxWidth; x++) {
+                    for (int x = Math.round(currentX); x < currentX + scaledBoxWidth; x++) {
 
                         if (pixelCount > thresh) {
                             currentCharacter = characters;
@@ -271,20 +273,22 @@ public class Detection {
             }
             if (columns < 6){
                 if (currentCharacter == (int)'!')
-                    studentNumber += '!';
+                    studentNumber += '_';
                 else
                     studentNumber += (char) (65 + currentCharacter);
             }
             else
                 studentNumber += currentCharacter;
         }
-        System.out.println(studentNumber);
+        return studentNumber;
     }
 
     public static Result detectQRCode(BufferedImage bi) {
+        Map<DecodeHintType, Object> hints = new HashMap<>();
+        hints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
         try {
             BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(new BufferedImageLuminanceSource(bi)));
-            return new QRCodeReader().decode(binaryBitmap);
+            return new QRCodeReader().decode(binaryBitmap, hints);
         } catch (Exception ex) {
             return null;
         }
