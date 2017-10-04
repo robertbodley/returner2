@@ -204,6 +204,14 @@ public class Detection {
         System.out.println();
     }
 
+    /**
+     *
+     * detects the student number by counting the number of white pixels in boxes.
+     *
+     * @param script object storing all information relating to a script including image and QR code
+     * @return a string of the detected student number
+     */
+
     public static String detectStudentNumber(ScriptObject script) {
         QRCode qr = script.getQrCodeProperties();
         Pair scalingFactor = qr.getScalingFactor();
@@ -229,7 +237,7 @@ public class Detection {
         for (int columns = 0; columns < 9; columns++) {
 
             currentY = startY;
-            currentCharacter = (int) '!';
+            currentCharacter = (int) '_';
             currentX = startX + (columns * (scaledBoxWidth + scaledHorizontalDistanceToNextBox));
 
             for (int characters = 0; columns < 6 ? characters < 26 : characters < 10; characters++) {
@@ -270,7 +278,7 @@ public class Detection {
                 currentY += (scaledBoxHeight + scaledVerticalDistanceToNextBox);
             }
             if (columns < 6){
-                if (currentCharacter == (int)'!')
+                if (currentCharacter == (int)'_')
                     studentNumber += '_';
                 else
                     studentNumber += (char) (65 + currentCharacter);
@@ -281,6 +289,13 @@ public class Detection {
         return studentNumber;
     }
 
+    /**
+     *
+     * Detects a QR code in a given buffered image returning the result, uses the ZXing library to perform detection.
+     *
+     * @param bi buffered image used to try and detect a QR code
+     * @return result object representing QR code information and properties
+     */
     public static Result detectQRCode(BufferedImage bi) {
         Map<DecodeHintType, Object> hints = new HashMap<>();
         hints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);

@@ -17,12 +17,10 @@ import org.opencv.imgproc.Imgproc;
 public class Straighten {
 
     //Rotation is done here
-    private Mat rotateImage(Mat image, double angle, QRCode qr) {
+    private Mat rotateImage(Mat image, double angle) {
         /*
             Adapted code by Vecsei to work with rotation angle calculated using QR code coordinates.
          */
-
-        Result r = qr.getResult();
 
         //Calculate image center
         Point imgCenter = new Point(image.cols() / 2, image.rows() / 2);
@@ -39,8 +37,8 @@ public class Straighten {
     }
 
     //Sums the whole process and returns with the straight image
-    public Mat straightenImage(Mat image, double angle, QRCode r) {
-        return rotateImage(image, angle, r);
+    public Mat straightenImage(Mat image, double angle) {
+        return rotateImage(image, angle);
     }
 
 

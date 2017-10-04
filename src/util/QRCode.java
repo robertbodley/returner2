@@ -3,6 +3,9 @@ package util;
 import com.google.zxing.Result;
 
 public class QRCode {
+    /*
+        This class stores information about the detected QR code on a script.
+     */
 
     private Pair[] QRCodeCornerCoordinates;
     private Result QRCode;
@@ -11,6 +14,9 @@ public class QRCode {
     private int numberOfPages;
 
     public QRCode(Pair[] points, Result result){
+        /*
+            Initializes a QR code object with default values.
+         */
         this.QRCodeCornerCoordinates = points;
         this.QRCode = result;
         quizPaper = result.getText().contains("quiz");

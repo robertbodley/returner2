@@ -11,7 +11,6 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.*;
@@ -19,17 +18,25 @@ import java.util.Arrays;
 
 
 public class Preprocessor {
-    private ScriptObject[] scripts;
     private String ImgFileLocation;
 
     public Preprocessor(String imgFile){
         this.ImgFileLocation = imgFile;
 
-        scripts = new ScriptObject[10];
-
     }
 
 
+    /**
+     *
+     * Calculates the point projection of the new QR code corner points based on the angle of rotation. Rotated around the center of the page by the angle
+     * passed in.
+     *
+     * @param points an array of the three QR code corner points
+     * @param angle a double representing the angle of rotation
+     * @param x the x value of the "origin" or center of the current page
+     * @param y the y value of the "origin" or center of the current page
+     * @return an array of three new updated QR code corner point locations
+     */
 
     public Pair[] projectPoints(Pair[] points, double angle, double x, double y){
 
@@ -54,7 +61,6 @@ public class Preprocessor {
 
         Result result = Detection.detectQRCode(bi);
         if (result == null){
-            // TODO: handle: failure to detect QR code
             System.out.println("QR CODE NOT FOUND");
             return null;
         }
@@ -75,7 +81,7 @@ public class Preprocessor {
 
         calculateScalingFactor(qrcode);
 
-        image = straightener.straightenImage(image, angle, qrcode);
+        image = straightener.straightenImage(image, angle);
 
         Imgproc.threshold(image, image, 190, 255, Imgproc.THRESH_BINARY_INV);
 
@@ -88,17 +94,42 @@ public class Preprocessor {
         return script;
    }
 
+    /**
+     *
+     * Calculates scaling factor by comparing the distance between QR code corner points (vertically and horizontally) to the distance between
+     * points on the default template, allowing us to determine where boxes are "relative" from the default template's location.
+     *
+     * @param qr QRCode object storing all QR code data including coordinates needed for scaling factor calculation
+     */
+
     public void calculateScalingFactor(QRCode qr) {
         ResultPoint[] points = qr.getResult().getResultPoints();
 
+
+        // Given a QR code with corners A, B, C:
+
+        //  B   C
+        //
+        //  A
+        // This calculates the base distance between B and C (the X distance) on the default sheet
+        // and the base distance between A and B (the Y distance) on the default sheet
         float baseXDistance = (float) (2103 - 1430.5);
         float baseYDistance = (float) (2787 - 2114);
 
+        // The base distances are compared to the distances of the current QR code to determine how much bigger/smaller the
+        // current script is relative to the default base script.
         float x = ResultPoint.distance(points[2], points[1]) / baseXDistance;
         float y = ResultPoint.distance(points[0], points[1]) / baseYDistance;
-
         qr.setScalingFactor(new Pair(x, y));
     }
+
+    /**
+     *
+     * This method calculates the angle of rotation by evaluating the tangent of the opposite and adjacent side of the triangle formed by the skew QR code corner points
+     *
+     * @param points array of three QR code corner points
+     * @return the angle of rotation
+     */
 
     private double calculateRotationAngle(Pair[] points){
 
@@ -108,13 +139,11 @@ public class Preprocessor {
          */
         double deltaX = (points[2].getX() - points[1].getX());
         double deltaY = (points[2].getY() - points[1].getY());
+
         double angle = Math.atan2(deltaY, deltaX);
         angle = Math.toDegrees(angle);
-        return angle;
-    }
 
-    public ScriptObject getScript(int i){
-        return scripts[i];
+        return angle;
     }
 
 }
