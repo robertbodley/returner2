@@ -8,11 +8,17 @@ public class QRCode {
     private Result QRCode;
     private Pair scalingFactor;
     private boolean quizPaper;
+    private int numberOfPages;
 
     public QRCode(Pair[] points, Result result){
         this.QRCodeCornerCoordinates = points;
         this.QRCode = result;
         quizPaper = result.getText().contains("quiz");
+        numberOfPages = Integer.parseInt(result.getText().split("---")[4]);
+    }
+
+    public int getNumberOfPages() {
+        return numberOfPages;
     }
 
     public String getData(){

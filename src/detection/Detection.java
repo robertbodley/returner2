@@ -121,9 +121,7 @@ public class Detection {
                 currentY += scaledBoxHeight + scaledVerticalDistanceToNextBox;
             }
             if (questions % 2 != 0){
-                System.out.println("oldmark, newmark" + oldMark + ", " + newMark);
                 marks[questions / 2] = (oldMark * 10) + newMark;
-                System.out.println("Question "+ questions + ": " + marks[questions/2]);
             }
         }
 
@@ -224,7 +222,7 @@ public class Detection {
         float currentX, currentY;
 
         float thresh = (scaledBoxHeight * scaledBoxWidth)/ 2;
-        System.out.println("Scaled threshold value: " + thresh);
+//        System.out.println("Scaled threshold value: " + thresh);
         int pixelCount, currentCharacter;
         String studentNumber = "";
 

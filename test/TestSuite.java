@@ -4,7 +4,7 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 
 @Suite.SuiteClasses({
-        TestAccuracy.class
+        TestStudentNumberDetectionAccuracy.class
 })
 
 public class TestSuite {

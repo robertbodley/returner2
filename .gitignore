@@ -1,6 +1,4 @@
-*.RAW
-*.jpg
-*.png
+outest.jpg
 out/*
 out
 .idea/workspace.xml
