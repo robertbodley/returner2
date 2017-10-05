@@ -12,6 +12,9 @@ public class QRCode {
     private Pair scalingFactor;
     private boolean quizPaper;
     private int numberOfPages;
+    private int numberOfQuestions;
+    private int numberOfAnswersPerQuestion;
+
 
     public QRCode(Pair[] points, Result result){
         /*
@@ -20,7 +23,19 @@ public class QRCode {
         this.QRCodeCornerCoordinates = points;
         this.QRCode = result;
         quizPaper = result.getText().contains("quiz");
-        numberOfPages = Integer.parseInt(result.getText().split("---")[4]);
+        String[] data = result.getText().split("---");
+        numberOfPages = Integer.parseInt(data[4]);
+        numberOfQuestions = Integer.parseInt(data[1]);
+        numberOfAnswersPerQuestion = Integer.parseInt(data[2]);
+
+    }
+
+    public int getNumberOfQuestions() {
+        return numberOfQuestions;
+    }
+
+    public int getNumberOfAnswersPerQuestion() {
+        return numberOfAnswersPerQuestion;
     }
 
     public int getNumberOfPages() {

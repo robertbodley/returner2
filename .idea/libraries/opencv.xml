@@ -1,0 +1,16 @@
+<component name="libraryTable">
+  <library name="opencv">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/libs/opencv" />
+    </CLASSES>
+    <JAVADOC />
+    <NATIVE>
+      <root url="file://$PROJECT_DIR$/libs/opencv" />
+    </NATIVE>
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/libs/opencv" />
+    </SOURCES>
+    <jarDirectory url="file://$PROJECT_DIR$/libs/opencv" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/libs/opencv" recursive="false" type="SOURCES" />
+  </library>
+</component>

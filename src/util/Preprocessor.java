@@ -42,6 +42,8 @@ public class Preprocessor {
 
         double a =  Math.toRadians(- angle);
 
+        // Lambda to calculate point projection on each (x, y) pair of the three corner points
+        // using angle of rotation about x, y of the origin (center of image in this case).
         points = Arrays.stream(points).map( p -> {
                 return new Pair(
                         (float) ((p.getX() - x) * Math.cos(a) + x - (p.getY() - y) * Math.sin(a)),
@@ -54,41 +56,50 @@ public class Preprocessor {
 
 
     public ScriptObject process(long t) throws IOException {
+        // Load OpenCV C++ DLL
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
         Straighten straightener = new Straighten();
+
+        // Read JPEG to process
         BufferedImage bi = ImageIO.read(new File(ImgFileLocation));
 
+        // Get result from QR code detection
         Result result = Detection.detectQRCode(bi);
         if (result == null){
             System.out.println("QR CODE NOT FOUND");
             return null;
         }
 
+        // Create array of corner coordinates in QR code
         Pair[] QRCodeCornerCoordinates = new Pair[3];
-
         for (int i = 0; i < 3; i++) {
             QRCodeCornerCoordinates[i] = new Pair(result.getResultPoints()[i].getX(), result.getResultPoints()[i].getY());
         }
 
+        // Calculate rotation angle
         double angle = calculateRotationAngle(QRCodeCornerCoordinates);
 
+        // Convert from buffered image to OpenCV mat object for straightening and binary inversion by threshold
         Mat image = new Mat(bi.getHeight(), bi.getWidth(), CvType.CV_8UC1);
         image.put(0,0, ((DataBufferByte) bi.getRaster().getDataBuffer()).getData());
 
+        // Update QR corner coordinates after rotation by point projection
         QRCodeCornerCoordinates =  projectPoints(QRCodeCornerCoordinates, angle, image.cols()/2, image.rows()/2);
         QRCode qrcode = new QRCode(QRCodeCornerCoordinates, result);
 
+        // calculate scaling factor, straighten based on angle of rotation and then invert colors
         calculateScalingFactor(qrcode);
-
         image = straightener.straightenImage(image, angle);
-
         Imgproc.threshold(image, image, 190, 255, Imgproc.THRESH_BINARY_INV);
 
+
+        // Convert from OpenCV's mat object back to buffered image for detection
         MatOfByte mob = new MatOfByte();
         Imgcodecs.imencode(".jpg", image, mob);
         bi = ImageIO.read(new ByteArrayInputStream(mob.toArray()));
 
+        // Create script object with image and Qr code and return the object for future use
         ScriptObject script = new ScriptObject(bi);
         script.setQrCodeProperties(qrcode);
         return script;

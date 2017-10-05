@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="JAVA_MODULE" version="4">
-  <component name="NewModuleRootManager" inherit-compiler-output="false">
+  <component name="NewModuleRootManager">
     <output url="file://$MODULE_DIR$/out/production/returner2" />
     <output-test url="file://$MODULE_DIR$/out/test/returner2" />
     <exclude-output />
@@ -11,6 +11,8 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="libs" level="project" />
+    <orderEntry type="library" name="junit" level="project" />
+    <orderEntry type="library" name="opencv" level="project" />
+    <orderEntry type="library" name="zxing" level="project" />
   </component>
 </module>

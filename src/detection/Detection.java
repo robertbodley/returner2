@@ -22,8 +22,8 @@ public class Detection {
     private static final float studentNumberHorizontalDistanceToNextBox = 81;
     private static final float studentNumberVerticalDistanceToNextBox = 36;
 
-    private static final float quizAnswerHorizontalDistanceToNextBox = (float) 86.5;
-    private static final float quizAnswerVerticalDistanceToNextBox = (float) 43;
+    private static final float quizAnswerHorizontalDistanceToNextBox = (float) 86.75;
+    private static final float quizAnswerVerticalDistanceToNextBox = (float) 42;
 
     private static final float testAnswerHorizontalDistanceToNextBox = (float) 80.75;
     private static final float testAnswerVerticalDistanceToNextBox = (float) 42.85;
@@ -48,7 +48,7 @@ public class Detection {
     private static final float studentNumberBoxesVerticalDistanceFromQR = 3279 - 2114;
     private static final float studentNumberBoxesHorizontalDistanceFromQR = (float)1430.5 - 577;
 
-    public static void detectTestMarks(ScriptObject script){
+    public static int[] detectTestMarks(ScriptObject script, boolean debugMode){
         QRCode qr = script.getQrCodeProperties();
         Pair scalingFactor = qr.getScalingFactor();
         BufferedImage img = script.getImage();
@@ -92,28 +92,30 @@ public class Detection {
 
                     for (int x = Math.round(currentX); x < currentX + scaledBoxWidth; x++) {
 
-                        if (pixelCount > thresh)
+                        if (pixelCount > thresh) {
+                            if (questions % 2 == 0){
+                                oldMark = box;
+                            }else{
+                                newMark = box;
+                            }
                             break;
+                        }
 
                         try {
                             if ((img.getRGB(x, y) & 0xFFFFFF) == 0xFFFFFF)
                                 // if current pixel is white then increment pixel count
                                 // shaded in boxes would have white pixels due to the gray scaling
                                 pixelCount++;
-
-                            // TODO: only change pixel value and output a file if running in debug mode
-                            img.setRGB(x, y, 0xd3d3d3);
+                            if (debugMode)
+                                img.setRGB(x, y, 0xd3d3d3);
                         }catch(Exception ex){
-                            System.out.println("x, y" + x  +" , " + y);
+                            // Detection error (tried to access pixels out of image bounds)
+                            return null;
                         }
                     }
                     if (pixelCount > thresh)
                         break;
-                    if (questions % 2 == 0){
-                        oldMark = box;
-                    }else{
-                        newMark = box;
-                    }
+
 
                 }
                 if (pixelCount > thresh)
@@ -125,14 +127,10 @@ public class Detection {
             }
         }
 
-        for (int m : marks) {
-            System.out.print( m+ ", ");
-        }
-        System.out.println();
+        return marks;
     }
 
-    public static void detectQuizMarks(ScriptObject script) {
-
+    public static char[] detectQuizMarks(ScriptObject script, boolean debugMode) {
         QRCode qr = script.getQrCodeProperties();
         Pair scalingFactor = qr.getScalingFactor();
         BufferedImage img = script.getImage();
@@ -141,6 +139,7 @@ public class Detection {
         int numberOfQuestions = Integer.parseInt(qrdata[1]);
         int numberOfAnswersPerQuestion = Integer.parseInt(qrdata[2]);
 
+        // Calculate new scaled distances for box detection
         float scaledBoxVerticalDistanceRelativeToQRCoordinates = quizAnswersBoxesVerticalDistanceFromQR * scalingFactor.getY();
         float scaledBoxHorizontalDistanceRelativeToQRCoordinates = quizAnswersBoxesHorizontalDistanceFromQR * scalingFactor.getX();
 
@@ -156,7 +155,7 @@ public class Detection {
         float thresh = (scaledBoxHeight * scaledBoxWidth)/ 2;
         int pixelCount;
 
-        int[] marks = new int[numberOfQuestions];
+        char[] marks = new char[numberOfQuestions];
         int mark;
 
         for (int questions = 0; questions < numberOfQuestions; questions++) {
@@ -172,36 +171,35 @@ public class Detection {
                 for (int y = Math.round(currentY); y < currentY + scaledBoxHeight; y++) {
 
                     for (int x = Math.round(currentX); x < currentX + scaledBoxWidth; x++) {
-                        if (pixelCount > thresh)
+                        if (pixelCount > thresh) {
+                            mark = box;
                             break;
+                        }
                         try {
                             if ((img.getRGB(x, y) & 0xFFFFFF) == 0xFFFFFF)
                                 // if current pixel is white then increment pixel count.
                                 // shaded in boxes would have white pixels due to the gray scaling
                                 pixelCount++;
 
-                            // TODO: only change pixel value and output a file if running in debug mode
-                            img.setRGB(x, y, 0xd3d3d3);
-                        }catch(Exception ex){
-                                System.out.println("x, y" + x  +" , " + y);
-                            }
+                            if (debugMode)
+                                img.setRGB(x, y, 0xd3d3d3);
+                        }catch(Exception ex) {
+                            // Detection error (tried to access pixels out of image bounds)
+                            return null;
+                        }
                     }
                     if (pixelCount > thresh)
                         break;
-                    mark = box;
 
                 }
                 if (pixelCount > thresh)
                     break;
                 currentX += scaledBoxWidth + scaledHorizontalDistanceToNextBox;
             }
-            marks[questions] += mark;
+            marks[questions] = (char) (65 + mark);
         }
 
-        for (int m : marks) {
-            System.out.print( m+ ", ");
-        }
-        System.out.println();
+        return marks;
     }
 
     /**
@@ -212,11 +210,12 @@ public class Detection {
      * @return a string of the detected student number
      */
 
-    public static String detectStudentNumber(ScriptObject script) {
+    public static String detectStudentNumber(ScriptObject script, boolean debugMode) {
         QRCode qr = script.getQrCodeProperties();
         Pair scalingFactor = qr.getScalingFactor();
         BufferedImage img = script.getImage();
 
+        // Calculate new scaled distances for box detection
         float scaledBoxVerticalDistanceRelativeToQRCoordinates = studentNumberBoxesVerticalDistanceFromQR * scalingFactor.getY();
         float scaledBoxHorizontalDistanceRelativeToQRCoordinates = studentNumberBoxesHorizontalDistanceFromQR * scalingFactor.getX();
 
@@ -229,25 +228,31 @@ public class Detection {
         float startX = qr.getQRCodeCornerCoordinates()[1].getX() - scaledBoxHorizontalDistanceRelativeToQRCoordinates;
         float currentX, currentY;
 
-        float thresh = (scaledBoxHeight * scaledBoxWidth)/ 2;
-//        System.out.println("Scaled threshold value: " + thresh);
+        // Calculate new pixel threshold based on scaled box width and height
+        float thresh =   (scaledBoxHeight * scaledBoxWidth)/ 2;
         int pixelCount, currentCharacter;
         String studentNumber = "";
 
+        // loop over columns (each student number letter)
         for (int columns = 0; columns < 9; columns++) {
 
             currentY = startY;
             currentCharacter = (int) '_';
             currentX = startX + (columns * (scaledBoxWidth + scaledHorizontalDistanceToNextBox));
 
+            // loop over 26 letters or 9 numbers boxes depending on column number
             for (int characters = 0; columns < 6 ? characters < 26 : characters < 10; characters++) {
 
                 pixelCount = 0;
 
+                // loop over box height
                 for (int y = Math.round(currentY); y < currentY + scaledBoxHeight; y++) {
 
+                    // loop over box width
                     for (int x = Math.round(currentX); x < currentX + scaledBoxWidth; x++) {
 
+                        // check if we have reached the pixel threshold
+                        // i.e enough pixels found to consider box shaded in
                         if (pixelCount > thresh) {
                             currentCharacter = characters;
                             break;
@@ -258,12 +263,12 @@ public class Detection {
                                 // shaded in boxes would have white pixels due to the gray scaling
                                 pixelCount++;
 
-                            // TODO: only change pixel value and output a file if running in debug mode
-                            img.setRGB(x, y, 0xd3d3d3);
 
+                            if (debugMode)
+                                img.setRGB(x, y, 0xd3d3d3);
                         } catch (Exception e) {
-                            System.out.println("BOUNDS ERROR IN DETECTION. X, Y:" + x + ", " + y);
-                            System.exit(0);
+                            // Detection error (tried to access pixels out of image bounds)
+                            return null;
                         }
                     }
                     if (pixelCount > thresh){
@@ -275,6 +280,8 @@ public class Detection {
                     currentCharacter = characters;
                     break;
                 }
+
+                // move vertically to next box
                 currentY += (scaledBoxHeight + scaledVerticalDistanceToNextBox);
             }
             if (columns < 6){

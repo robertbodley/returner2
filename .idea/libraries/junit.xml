@@ -1,0 +1,20 @@
+<component name="libraryTable">
+  <library name="junit">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/libs/junit" />
+      <root url="file://$PROJECT_DIR$/libs/zxing" />
+      <root url="file://$PROJECT_DIR$/libs/opencv" />
+    </CLASSES>
+    <JAVADOC />
+    <NATIVE>
+      <root url="file://$PROJECT_DIR$/libs/opencv" />
+    </NATIVE>
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/libs/opencv" />
+    </SOURCES>
+    <jarDirectory url="file://$PROJECT_DIR$/libs/junit" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/libs/opencv" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/libs/zxing" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/libs/opencv" recursive="false" type="SOURCES" />
+  </library>
+</component>

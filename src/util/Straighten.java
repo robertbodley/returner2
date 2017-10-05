@@ -10,7 +10,6 @@ package util;
  * 2016.08.29.
  */
 
-import com.google.zxing.Result;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 
