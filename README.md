@@ -11,7 +11,3 @@ additional features: automatic page orientation detection; automatic detection o
 pages; robustness for different scanners; robustness for image sizes and dots-per-inch. All of these
 features must be implemented using the fastest possible algorithms.
 
-## Task List
-- [x] Task 1
-- [ ] Task 2
-- [ ] Task 3

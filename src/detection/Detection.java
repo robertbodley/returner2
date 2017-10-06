@@ -48,6 +48,15 @@ public class Detection {
     private static final float studentNumberBoxesVerticalDistanceFromQR = 3279 - 2114;
     private static final float studentNumberBoxesHorizontalDistanceFromQR = (float)1430.5 - 577;
 
+
+    /**
+     * This method detects the marks shaded in boxes on a test script
+     *
+     * @param script a script object representing the test script
+     * @param debugMode boolean to specify whether to set pixels to gray as detection for visual debugging
+     * @return an array of marks
+     */
+
     public static int[] detectTestMarks(ScriptObject script, boolean debugMode){
         QRCode qr = script.getQrCodeProperties();
         Pair scalingFactor = qr.getScalingFactor();
@@ -80,6 +89,8 @@ public class Detection {
         for (int questions = 0; questions < numberOfQuestions * 2; questions++) {
 
             currentY = questions < 10 ? firstStartY : secondStartY;
+
+            // update X value before iterating over boxes vertically again
             currentX =
                     questions < 10 ?
                     startX + questions * (scaledBoxWidth + scaledHorizontalDistanceToNextBox) :
@@ -88,10 +99,14 @@ public class Detection {
             for (int box = 0; box < 10; box++) {
                 pixelCount = 0;
 
+                // loop over box vertically
                 for (int y = Math.round(currentY); y < currentY + scaledBoxHeight; y++) {
-
+                    // loop over box horizontally
                     for (int x = Math.round(currentX); x < currentX + scaledBoxWidth; x++) {
 
+                        // if enough white pixels found
+                        // set either old mark or new mark to the current box depending on whether the
+                        // question is odd or even. This is used to create double digit marks.
                         if (pixelCount > thresh) {
                             if (questions % 2 == 0){
                                 oldMark = box;
@@ -113,13 +128,25 @@ public class Detection {
                             return null;
                         }
                     }
-                    if (pixelCount > thresh)
+                    if (pixelCount > thresh) {
+                        if (questions % 2 == 0){
+                            oldMark = box;
+                        }else{
+                            newMark = box;
+                        }
                         break;
+                    }
 
 
                 }
-                if (pixelCount > thresh)
+                if (pixelCount > thresh) {
+                    if (questions % 2 == 0){
+                        oldMark = box;
+                    }else{
+                        newMark = box;
+                    }
                     break;
+                }
                 currentY += scaledBoxHeight + scaledVerticalDistanceToNextBox;
             }
             if (questions % 2 != 0){
@@ -129,6 +156,16 @@ public class Detection {
 
         return marks;
     }
+
+
+    /**
+     *
+     * This method detects the marks shaded in on a quiz paper
+     *
+     * @param script a script object representing the test script
+     * @param debugMode boolean to specify whether to set pixels to gray as detection for visual debugging
+     * @return an array of characters representing the selection for quiz questions
+     */
 
     public static char[] detectQuizMarks(ScriptObject script, boolean debugMode) {
         QRCode qr = script.getQrCodeProperties();
@@ -158,19 +195,25 @@ public class Detection {
         char[] marks = new char[numberOfQuestions];
         int mark;
 
+        // loop over questions in quiz
         for (int questions = 0; questions < numberOfQuestions; questions++) {
             currentX = startX;
-            mark = 0;
+            mark = (int)'_';
 
 
             currentY = startY + questions * (scaledBoxHeight + scaledVerticalDistanceToNextBox);
 
+            // loop over boxes horizontally
             for (int box = 0; box < numberOfAnswersPerQuestion; box++) {
                 pixelCount = 0;
 
+                // loop over box vertically
                 for (int y = Math.round(currentY); y < currentY + scaledBoxHeight; y++) {
-
+                    // loop over box horizontally
                     for (int x = Math.round(currentX); x < currentX + scaledBoxWidth; x++) {
+
+                        // if there is enough white pixels found
+                        // break ouf of the loop and set the mark to the current box.
                         if (pixelCount > thresh) {
                             mark = box;
                             break;
@@ -188,15 +231,24 @@ public class Detection {
                             return null;
                         }
                     }
-                    if (pixelCount > thresh)
+                    if (pixelCount > thresh){
+                        mark = box;
                         break;
+                    }
 
                 }
-                if (pixelCount > thresh)
+                if (pixelCount > thresh){
+                    mark = box;
                     break;
+                }
                 currentX += scaledBoxWidth + scaledHorizontalDistanceToNextBox;
             }
-            marks[questions] = (char) (65 + mark);
+
+            // if still an underscore i.e didn't detect then set the answer to an underscore.
+            if(mark == (int)'_')
+                marks[questions] = (char) mark;
+            else
+                marks[questions] = (char) (65 + mark);
         }
 
         return marks;
@@ -206,7 +258,8 @@ public class Detection {
      *
      * detects the student number by counting the number of white pixels in boxes.
      *
-     * @param script object storing all information relating to a script including image and QR code
+     * @param script a script object representing the test script
+     * @param debugMode boolean to specify whether to set pixels to gray as detection for visual debugging
      * @return a string of the detected student number
      */
 

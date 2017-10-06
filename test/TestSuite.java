@@ -7,7 +7,9 @@ import org.junit.runners.Suite;
         TestStudentNumberDetectionAccuracy.class,
         TestQuizMarksDetectionAccuracy.class,
         TestScriptMarksDetectionAccuracy.class,
-        TestBatchPDFOutput.class
+        TestDifferentScanners.class,
+        TestRotationAngle.class,
+        TestDifferentDPIAccuracy.class
 })
 
 public class TestSuite {

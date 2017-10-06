@@ -38,7 +38,7 @@ public class Preprocessor {
      * @return an array of three new updated QR code corner point locations
      */
 
-    public Pair[] projectPoints(Pair[] points, double angle, double x, double y){
+    private Pair[] projectPoints(Pair[] points, double angle, double x, double y){
 
         double a =  Math.toRadians(- angle);
 
@@ -142,7 +142,7 @@ public class Preprocessor {
      * @return the angle of rotation
      */
 
-    private double calculateRotationAngle(Pair[] points){
+    public double calculateRotationAngle(Pair[] points){
 
         /*
             Calculate the angle of rotation by taking looking at the triangle formed by the skew QR code.

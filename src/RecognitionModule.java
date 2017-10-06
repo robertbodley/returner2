@@ -44,6 +44,7 @@ public class RecognitionModule {
         ProcessBuilder pro = null;
         Preprocessor preprocessor = null;
         String s = null;
+
         while(morePages) {
 
             // convert command used to convert a specific PDF page to JPEG, resizing and then applying a binary threshold to enhance

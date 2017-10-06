@@ -1,6 +1,9 @@
 package util;
 
 public class Pair {
+    /**
+     * Stores infomation about a pair, used to store coordinate points.
+     */
     private float x;
     private float y;
 

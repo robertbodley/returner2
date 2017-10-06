@@ -5,41 +5,85 @@ import util.Preprocessor;
 import util.ScriptObject;
 
 import javax.imageio.ImageIO;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.io.File;
 import java.io.IOException;
 
 
 public class TestScriptMarksDetectionAccuracy {
 
-    String[] answers = {"BDLROB001", "PJND_D019", "JJZAYJ039", "WXYZAZ888", "WXYZAZ888"
-            ,"BDLRJM199", "BABABA001", "YZYZYZ089", "BDLROB001", "VNTAND006"};
     String testLocation ="testResources/accuracy/";
 
-    int total = 0;
-    int numberOfIncorrect = 0;
+    static int total = 0;
+    static int numberOfIncorrectDetections = 0;
 
     @Test
     public void TestScriptMarksDetectionAccuracy() throws IOException {
 
-        int testn = 9;
-
+        int[] ans = {12,11,20,10,1,12};
         long t = System.nanoTime();
-        String path = testLocation + "badquality-" + testn  +".jpg";
+        String path = testLocation + "l-0.jpg";
 
         Preprocessor preprocessor = new Preprocessor(path);
         ScriptObject script = preprocessor.process(t);
 
-        String sn = Detection.detectStudentNumber(script, false);
-        total += 9;
-        for(int i = 0; i < sn.length(); i++){
-            if (sn.charAt(i) != answers[testn].charAt(i))
-                numberOfIncorrect++;
+        int before = numberOfIncorrectDetections;
+        total += script.getQrCodeProperties().getNumberOfQuestions()*2;
+        int[] marks = Detection.detectTestMarks(script, true);
+
+        for (int i = 0 ;i < marks.length ; i++){
+            if(marks[i] != ans[i])
+                numberOfIncorrectDetections++;
         }
 
-        System.out.println("Student number detection:\t10 scripts test \nACCURACY: \t\t\t\t\t" + (100 - (numberOfIncorrect*100/total)) + "%\n");
-        ImageIO.write(script.getImage(), "jpg", new File("output" + testn+".jpg"));
 
-        Assert.assertTrue(sn.equals(answers[testn]));
+        Assert.assertEquals(numberOfIncorrectDetections - before, 0);
+    }
 
+    @Test
+    public void TestScriptMarksDetectionAccuracy1() throws IOException {
+
+        int[] ans = {11,9,23,6};
+        long t = System.nanoTime();
+        String path = testLocation + "l-2.jpg";
+
+        Preprocessor preprocessor = new Preprocessor(path);
+        ScriptObject script = preprocessor.process(t);
+
+        int before = numberOfIncorrectDetections;
+        total += script.getQrCodeProperties().getNumberOfQuestions()*2;
+        int[] marks = Detection.detectTestMarks(script, true);
+
+        for (int i = 0 ;i < marks.length ; i++){
+            if(marks[i] != ans[i])
+                numberOfIncorrectDetections++;
+        }
+
+
+        Assert.assertEquals(numberOfIncorrectDetections - before, 0);
+    }
+
+    @Test
+    public void TestScriptMarksDetectionAccuracy2() throws IOException {
+
+        int[] ans = {88,66,44,22,0,0,11,22,33,44};
+        long t = System.nanoTime();
+        String path = testLocation + "l-3.jpg";
+
+        Preprocessor preprocessor = new Preprocessor(path);
+        ScriptObject script = preprocessor.process(t);
+
+        int before = numberOfIncorrectDetections;
+        total += script.getQrCodeProperties().getNumberOfQuestions()*2;
+        int[] marks = Detection.detectTestMarks(script, true);
+
+        for (int i = 0 ;i < marks.length ; i++){
+            if(marks[i] != ans[i])
+                numberOfIncorrectDetections++;
+        }
+
+        System.out.println("test script marks accuracy:\t\t3 scripts test \nACCURACY: \t\t\t\t\t\t" + (100 - (numberOfIncorrectDetections *100/total)) + "%\n");
+
+        Assert.assertEquals(numberOfIncorrectDetections - before, 0);
     }
 }

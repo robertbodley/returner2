@@ -13,8 +13,8 @@ public class TestStudentNumberDetectionAccuracy {
     ,"BDLRJM199", "BABABA001", "YZYZYZ089", "BDLROB001", "VNTAND006"};
     String testLocation ="testResources/accuracy/";
 
-    int total = 0;
-    int numberOfIncorrect = 0;
+    static int total = 0;
+    static int numberOfIncorrectDetections = 0;
 
     @Test
     public void TestStudentNumberDetectionAccuracy() throws IOException {
@@ -31,9 +31,9 @@ public class TestStudentNumberDetectionAccuracy {
         total += 9;
         for(int i = 0; i < sn.length(); i++){
             if (sn.charAt(i) != answers[testn].charAt(i))
-                numberOfIncorrect++;
+                numberOfIncorrectDetections++;
         }
-        ImageIO.write(script.getImage(), "jpg", new File("output" + testn+".jpg"));
+//        ImageIO.write(script.getImage(), "jpg", new File("output" + testn+".jpg"));
         Assert.assertTrue(sn.equals(answers[testn]));
     }
 
@@ -52,9 +52,8 @@ public class TestStudentNumberDetectionAccuracy {
         total += 9;
         for(int i = 0; i < sn.length(); i++){
             if (sn.charAt(i) != answers[testn].charAt(i))
-                numberOfIncorrect++;
+                numberOfIncorrectDetections++;
         }
-        ImageIO.write(script.getImage(), "jpg", new File("output" + testn+".jpg"));
         Assert.assertTrue(sn.equals(answers[testn]));
     }
 
@@ -72,9 +71,8 @@ public class TestStudentNumberDetectionAccuracy {
         total += 9;
         for(int i = 0; i < sn.length(); i++){
             if (sn.charAt(i) != answers[testn].charAt(i))
-                numberOfIncorrect++;
+                numberOfIncorrectDetections++;
         }
-        ImageIO.write(script.getImage(), "jpg", new File("output" + testn+".jpg"));
         Assert.assertTrue(sn.equals(answers[testn]));
     }
 
@@ -92,9 +90,8 @@ public class TestStudentNumberDetectionAccuracy {
         total += 9;
         for(int i = 0; i < sn.length(); i++){
             if (sn.charAt(i) != answers[testn].charAt(i))
-                numberOfIncorrect++;
+                numberOfIncorrectDetections++;
         }
-        ImageIO.write(script.getImage(), "jpg", new File("output" + testn+".jpg"));
         Assert.assertTrue(sn.equals(answers[testn]));
     }
 
@@ -112,9 +109,8 @@ public class TestStudentNumberDetectionAccuracy {
         total += 9;
         for(int i = 0; i < sn.length(); i++){
             if (sn.charAt(i) != answers[testn].charAt(i))
-                numberOfIncorrect++;
+                numberOfIncorrectDetections++;
         }
-        ImageIO.write(script.getImage(), "jpg", new File("output" + testn+".jpg"));
         Assert.assertTrue(sn.equals(answers[testn]));
     }
 
@@ -132,9 +128,8 @@ public class TestStudentNumberDetectionAccuracy {
         total += 9;
         for(int i = 0; i < sn.length(); i++){
             if (sn.charAt(i) != answers[testn].charAt(i))
-                numberOfIncorrect++;
+                numberOfIncorrectDetections++;
         }
-        ImageIO.write(script.getImage(), "jpg", new File("output" + testn+".jpg"));
         Assert.assertTrue(sn.equals(answers[testn]));
     }
     @Test
@@ -151,9 +146,8 @@ public class TestStudentNumberDetectionAccuracy {
         total += 9;
         for(int i = 0; i < sn.length(); i++){
             if (sn.charAt(i) != answers[testn].charAt(i))
-                numberOfIncorrect++;
+                numberOfIncorrectDetections++;
         }
-        ImageIO.write(script.getImage(), "jpg", new File("output" + testn+".jpg"));
         Assert.assertTrue(sn.equals(answers[testn]));
     }
 
@@ -171,9 +165,8 @@ public class TestStudentNumberDetectionAccuracy {
         total += 9;
         for(int i = 0; i < sn.length(); i++){
             if (sn.charAt(i) != answers[testn].charAt(i))
-                numberOfIncorrect++;
+                numberOfIncorrectDetections++;
         }
-        ImageIO.write(script.getImage(), "jpg", new File("output" + testn+".jpg"));
         Assert.assertTrue(sn.equals(answers[testn]));
     }
 
@@ -191,9 +184,8 @@ public class TestStudentNumberDetectionAccuracy {
         total += 9;
         for(int i = 0; i < sn.length(); i++){
             if (sn.charAt(i) != answers[testn].charAt(i))
-                numberOfIncorrect++;
+                numberOfIncorrectDetections++;
         }
-        ImageIO.write(script.getImage(), "jpg", new File("output" + testn+".jpg"));
 
         Assert.assertTrue(sn.equals(answers[testn]));
     }
@@ -213,11 +205,9 @@ public class TestStudentNumberDetectionAccuracy {
         total += 9;
         for(int i = 0; i < sn.length(); i++){
             if (sn.charAt(i) != answers[testn].charAt(i))
-                numberOfIncorrect++;
+                numberOfIncorrectDetections++;
         }
-
-        System.out.println("Student number detection:\t10 scripts test \nACCURACY: \t\t\t\t\t" + (100 - (numberOfIncorrect*100/total)) + "%\n");
-        ImageIO.write(script.getImage(), "jpg", new File("output" + testn+".jpg"));
+        System.out.println("Student number detection:\t\t10 scripts tested \nACCURACY: \t\t\t\t\t\t" + (100 - (numberOfIncorrectDetections *100/total)) + "%\n");
 
         Assert.assertTrue(sn.equals(answers[testn]));
     }
