@@ -10,6 +10,4 @@ students.
 - automatic page orientation detection; 
 - automatic detection of front pages and nonfront pages; 
 - robustness for different scanners; 
-- robustness for image sizes and dots-per-inch. All of these
-features must be implemented using the fastest possible algorithms.
-
+- robustness for image sizes and dots-per-inch.
