@@ -7,7 +7,7 @@ Unfortunately, the recognition does not always work and this causes much frustra
 students.
 
 ## The goal of this project is to create an improved recognition module for the returner, with the following additional features: 
-- automatic page orientation detection; 
-- automatic detection of front pages and nonfront pages; 
+- automatic page orientation detection, using QR code; 
+- automatic detection of front pages and nonfront pages, using QR code; 
 - robustness for different scanners; 
-- robustness for image sizes and dots-per-inch.
+- robustness for various image sizes and dots-per-inch configurations.
