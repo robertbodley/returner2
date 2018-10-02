@@ -1,0 +1,3 @@
+[submodule "returner2-generator"]
+	path = returner2-generator
+	url = https://github.com/robertbodley/returner2-generator
