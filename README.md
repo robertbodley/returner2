@@ -9,6 +9,7 @@ students.
 ## The goal of this project is to create an improved recognition module for the returner, with the following additional features: 
 - automatic page orientation detection; 
 - automatic detection of front pages and nonfront pages; 
-- robustness for different scanners; robustness for image sizes and dots-per-inch. All of these
+- robustness for different scanners; 
+- robustness for image sizes and dots-per-inch. All of these
 features must be implemented using the fastest possible algorithms.
 
